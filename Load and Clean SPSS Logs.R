@@ -2,11 +2,24 @@
 library(dplyr)
 library(lubridate)
 # Load and clean log data
+setwd("~/Dropbox/LRW Ops/Shaun Carlos/")
 logs <- read.csv("Logfile.txt", header = FALSE, sep = " ")
 logs <- tbl_df(logs)
 logs <- logs %>% mutate(Date = ymd(paste(V8, V5, V6, sep = " ")))
 logs <- mutate(logs, DateTime = ymd_hms(paste(Date, V7, sep=" "), 
                                         tz="America/Los_Angeles"))
+
+# Gather license denial logs to see how many users were turned away
+logs_denial <- logs %>%
+    select(Date, DateTime, V11, V12, V13, V14, V15, V16) %>%
+    filter(V13 == 1, V16 != "LM_SERVER", V11 == "1200")
+names(logs_denial) <- c("Date", "DateTime", "Feature", "Version", "Transaction", 
+                        "NumberOfKeys", "KeyLife", "User")
+logs_denial$Transaction <- as.numeric(logs_denial$Transaction)
+logs_denial$NumberOfKeys <- as.numeric(logs_denial$NumberOfKeys)
+logs_denial$KeyLife <- as.numeric(logs_denial$KeyLife)
+logs_denial$Date <- as.Date(logs_denial$Date)
+
 logs_clean <- logs %>%
     select(Date, DateTime, V11, V12, V13, V14, V15, V16) %>%
     filter(V13 == 2, V16 != "LM_SERVER", V11 == "1200")
@@ -19,6 +32,7 @@ logs_clean$Date <- as.Date(logs_clean$Date)
 logs_clean <- mutate(logs_clean, 
                      Hours = KeyLife / 60 / 60, 
                      HourOfDay = hour(DateTime))
+
 # Group data by user to summarize usage
 logs_clean %>%
     group_by(User) %>% 
@@ -69,18 +83,35 @@ logs_version <- left_join(logs_version,
                            filter(v18 >= 20 | v20 >= 20 | v21 >= 20) %>% 
                            select(Date) %>% mutate(MaxOut = 20),
                        by = "Date")
+
+logs_denial_v20 <- logs_denial %>% 
+    filter(Version == "v200") %>%
+    select(Date, User, NumberOfKeys) %>%
+    group_by(Date) %>%
+    summarize(Count = n_distinct(User))
+logs_denial_v21 <- logs_denial %>% 
+    filter(Version == "v210") %>%
+    select(Date, User, NumberOfKeys) %>%
+    group_by(Date) %>%
+    summarize(Count = n_distinct(User))
+logs_denial_version <- rbind(logs_denial_v20, logs_denial_v21)
+names(logs_denial_version) <- c("Date", "Count")
+
 # Filter out weekends and holidays
 logs_version <- filter(logs_version, 
                        !(weekdays(Date) %in% c('Saturday','Sunday')))
 logs_version <- filter(logs_version, Date != as.Date("2014-05-26"))
 logs_version <- filter(logs_version, Date != as.Date("2014-09-01"))
-plot(range(logs_version$Date), range(0:40), type="n", xlab="Date",
+plot(range(logs_version$Date), range(0:50), type="n", xlab="Date",
      ylab="Concurrent Licenses")
-lines(logs_version$Date, logs_version$v18, type="l", col="BLACK")
-lines(logs_version$Date, logs_version$v20, type="l", col="RED")
+#lines(logs_version$Date, logs_version$v18, type="l", col="BLACK")
+lines(logs_version$Date, logs_version$v20, type="l", col="BLACK")
 lines(logs_version$Date, logs_version$v21, type="l", col="BLUE")
 lines(logs_version$Date, logs_version$Total, type="l", col="PURPLE")
 lines(logs_version$Date, logs_version$MaxOut, type="p", col="GREEN")
-legend("topleft", legend = c("v18", "v20", "v21", "Total", "MaxOut"), 
-       lwd = c(2.5,2.5), col = c("BLACK", "RED", "BLUE", "PURPLE", "GREEN"),
+lines(logs_denial_version$Date, logs_denial_version$Count, type="p", col="RED")
+legend("topleft", legend = c("v20", "v21", "Total", "MaxOut", "Denial"), 
+       lwd = c(2.5,2.5), col = c("BLACK", "BLUE", "PURPLE", "GREEN", "RED"),
        horiz = TRUE)
+
+rm(list=ls())
