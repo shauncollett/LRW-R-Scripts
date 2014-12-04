@@ -5,8 +5,9 @@ library('RCurl')
 library('RJSONIO')
 library(tools)
 
+# Hack: Should create a single folder, then append to github url and primary directory
 api_key <- "acc_de49c6c12282e6d"
-github_url <- "https://raw.githubusercontent.com/shauncollett/LRW-R-Scripts/master/household_activities"
+github_url <- "https://raw.githubusercontent.com/shauncollett/LRW-R-Scripts/master/getting_more_specific_about_business_travel"
 directory <- "~/Box Sync/Play/LRW R Scripts/getting_more_specific_about_business_travel"
 imagga_api_url <- "http://api.imagga.com/draft/tags"
 
@@ -19,7 +20,7 @@ for (file in file_list){
         sample.image <- curlEscape(paste(github_url, file, sep="/"))
         auto.tagging.url <- paste(imagga_api_url, "?api_key=", api_key, "&url=", sample.image, sep="")
 
-        #print("Waiting for auto-tagging result...")
+        print(paste("Waiting for auto-tagging result for", file, sep=" "))
         auto.tagging.result <- fromJSON(getURL(auto.tagging.url))
         
         # Convert the JSON into a data frame, then data table
