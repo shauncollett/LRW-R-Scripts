@@ -1,6 +1,3 @@
--- STAGE: LAX-SQL-101S.PROD.LOCAL\SPSS
--- PROD: LAX-SPSS-101P.PROD.LOCAL\SPSS
-
 --SELECT TOP 100 * FROM mrUserData.dbo.ApplicationSessionHistory
 --SELECT TOP 100 * FROM mrUserData.dbo.Users
 --SELECT TOP 100 * FROM mrUserData.dbo.UserSessionHistory

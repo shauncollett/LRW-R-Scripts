@@ -61,6 +61,8 @@ abline(v=55, lwd=2)
 summary(concurrent_plot$Count)
 
 # Box Plot
+# TODO: Should boxplot it by month.  Would require add'l variable added to dataset
+#   then adjust boxplot(Count ~ Month, concurrent_plot, col="BLUE")
 boxplot(concurrent_plot$Count, col="blue")
 abline(h=55)
 
