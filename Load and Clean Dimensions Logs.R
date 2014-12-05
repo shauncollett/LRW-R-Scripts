@@ -39,12 +39,14 @@ concurrent_plot <- filter(concurrent_plot, Count > 0)
 
 # Create trend line using regression model
 fit <- lm(Count~Date, data=concurrent_plot)
+lo <- loess(Count~as.numeric(Date), data=concurrent_plot)
 
 # Line Plot
 plot(range(concurrent_plot$Date), range(0:max(concurrent_plot$Count)+10), type="n", xlab="Date",
      ylab="Concurrent Licenses")
 lines(concurrent_plot$Date, concurrent_plot$Count, type="l", col="BLACK")
-lines(concurrent_plot$Date, fitted(fit), col="BLUE")
+#lines(concurrent_plot$Date, fitted(fit), col="BLUE")
+lines(concurrent_plot$Date, predict(lo), col="RED", lwd=2)
 legend("topleft", legend = c("Reporter"), 
        lwd = c(2.5,2.5), col = c("BLACK"),
        horiz = TRUE)

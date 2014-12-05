@@ -11,7 +11,6 @@ github_url <- "https://raw.githubusercontent.com/shauncollett/LRW-R-Scripts/mast
 directory <- "~/Box Sync/Play/LRW R Scripts/getting_more_specific_about_business_travel"
 imagga_api_url <- "http://api.imagga.com/draft/tags"
 
-# character vector e.g. "001.csv", "002.csv" ... "332.csv"
 file_list <- list.files(directory)
 
 for (file in file_list){
